@@ -1,26 +1,45 @@
-
-import React, { useState, useCallback, useMemo } from 'react';
-import Particles from '@tsparticles/react';
-import { Engine } from '@tsparticles/engine';
-import { loadConfettiPreset } from '@tsparticles/preset-confetti';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Users, DollarSign, Activity, Sparkles, Target, Zap } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Particles from "react-tsparticles";
+import { loadConfettiPreset } from "tsparticles-preset-confetti";
+import { initParticlesEngine } from "@/utils/particles";
+import type { Container, ISourceOptions } from "tsparticles-engine";
+import {
+  Bell,
+  Calendar,
+  FileText,
+  Mail,
+  Plus,
+  Settings,
+  TrendingUp,
+  Users,
+  ShoppingCart,
+  BarChart,
+} from 'lucide-react';
+import { tsParticles } from "tsparticles-engine";
 
 const Dashboard = () => {
-  const [confettiKey, setConfettiKey] = useState(0);
+  const [init, setInit] = useState(false);
 
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadConfettiPreset(engine);
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadConfettiPreset(engine);
+    }).then(() => {
+      setInit(true);
+    });
   }, []);
 
-  const triggerConfetti = () => {
-    setConfettiKey(prev => prev + 1);
-  };
+  const particlesLoaded = useCallback(async (container?: Container): Promise<void> => {
+    console.log(container);
+  }, []);
 
-  const confettiOptions = useMemo(() => ({
-    key: confettiKey,
+  const triggerConfetti = useCallback(async () => {
+    const container = tsParticles.domItem(0);
+    if (container) {
+      await container.addPreset("confetti");
+    }
+  }, []);
+
+  const confettiOptions: ISourceOptions = {
     preset: "confetti",
     background: {
       color: {
@@ -28,12 +47,12 @@ const Dashboard = () => {
       },
     },
     fullScreen: {
-      enable: false,
+      enable: true,
       zIndex: 1000,
     },
     particles: {
       color: {
-        value: ["#667eea", "#764ba2", "#f093fb", "#f5576c", "#4facfe", "#00f2fe"],
+        value: ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"],
       },
       move: {
         direction: "bottom",
@@ -51,13 +70,14 @@ const Dashboard = () => {
         value: 50,
         density: {
           enable: true,
-          area: 800,
+          width: 1920,
+          height: 1080,
         },
       },
       opacity: {
         value: 1,
         animation: {
-          enable: true,
+          enable: false,
           startValue: "max",
           destroy: "min",
           speed: 0.3,
@@ -89,28 +109,25 @@ const Dashboard = () => {
           speed: 60,
         },
       },
-      shape: {
-        type: ["square", "circle"],
-      },
       size: {
-        value: {
-          min: 2,
-          max: 4,
+        value: 3,
+        animation: {
+          enable: true,
+          startValue: "min",
+          destroy: "max",
+          speed: 40,
+          sync: true,
         },
       },
       roll: {
         darken: {
           enable: true,
-          value: 30,
-        },
-        enlighten: {
-          enable: true,
-          value: 30,
+          value: 25,
         },
         enable: true,
         speed: {
-          min: 5,
-          max: 15,
+          min: 15,
+          max: 25,
         },
       },
       wobble: {
@@ -118,202 +135,156 @@ const Dashboard = () => {
         enable: true,
         move: true,
         speed: {
-          min: -7,
-          max: 7,
+          min: -15,
+          max: 15,
         },
       },
     },
-  }), [confettiKey]);
+  };
 
-  const stats = [
-    {
-      title: "Total Revenue",
-      value: "$124,590",
-      change: "+12.5%",
-      icon: DollarSign,
-      trend: "up",
-      color: "from-emerald-500 to-emerald-600"
-    },
-    {
-      title: "Active Users",
-      value: "12,453",
-      change: "+8.2%",
-      icon: Users,
-      trend: "up",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      title: "Conversion Rate",
-      value: "3.24%",
-      change: "+2.1%",
-      icon: TrendingUp,
-      trend: "up",
-      color: "from-purple-500 to-purple-600"
-    },
-    {
-      title: "Performance Score",
-      value: "98.2%",
-      change: "+5.7%",
-      icon: Activity,
-      trend: "up",
-      color: "from-pink-500 to-pink-600"
-    }
-  ];
+  if (!init) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Confetti Container */}
-      <div className="absolute inset-0 pointer-events-none z-50">
-        <Particles
-          id="confetti"
-          init={particlesInit}
-          options={confettiOptions}
-          className="w-full h-full"
-        />
-      </div>
-
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern"></div>
-      </div>
-
-      <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-              <p className="text-slate-600 mt-2 text-lg">Welcome back! Here's what's happening with your business.</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 bg-grid-pattern">
+      <Particles
+        id="tsparticles"
+        particlesLoaded={particlesLoaded}
+        options={confettiOptions}
+        className="absolute inset-0 pointer-events-none"
+      />
+      
+      {/* Header */}
+      <div className="relative z-10 bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">S</span>
+              </div>
+              <h1 className="text-xl font-semibold text-gray-900">SaaS Dashboard</h1>
             </div>
-            <div className="flex gap-3">
-              <Button 
-                onClick={triggerConfetti}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Celebrate!
-              </Button>
-              <Button variant="outline" className="border-slate-300 hover:border-slate-400 transition-colors">
-                <Target className="w-4 h-4 mr-2" />
-                View Reports
-              </Button>
+            <div className="flex items-center space-x-4">
+              <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <Bell className="w-5 h-5" />
+              </button>
+              <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <Settings className="w-5 h-5" />
+              </button>
+              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
             </div>
           </div>
-        </header>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8 animate-fade-in">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, Alex!</h2>
+          <p className="text-gray-600">Here's what's happening with your business today.</p>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card 
-              key={stat.title} 
-              className="hover:shadow-lg transition-all duration-300 hover:scale-105 border-0 shadow-md bg-white/80 backdrop-blur-sm"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg bg-gradient-to-r ${stat.color} shadow-lg`}>
-                  <stat.icon className="h-4 w-4 text-white" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-slate-900 mb-1">
-                  {stat.value}
-                </div>
-                <Badge 
-                  variant="secondary" 
-                  className="bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 transition-colors"
-                >
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  {stat.change}
-                </Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Performance Chart Card */}
-          <Card className="lg:col-span-2 border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-slate-900">Performance Overview</CardTitle>
-              <CardDescription className="text-slate-600">Your business metrics for the last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center border border-blue-100">
-                <div className="text-center">
-                  <Activity className="h-12 w-12 text-blue-400 mx-auto mb-3" />
-                  <p className="text-slate-600 font-medium">Chart visualization would go here</p>
-                  <p className="text-slate-500 text-sm mt-1">Integration with your preferred charting library</p>
-                </div>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">$45,231</p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="p-3 bg-green-100 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <p className="text-sm text-green-600 mt-2">+20.1% from last month</p>
+          </div>
 
-          {/* Quick Actions Card */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-slate-900">Quick Actions</CardTitle>
-              <CardDescription className="text-slate-600">Frequently used features</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                onClick={triggerConfetti}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Launch Campaign
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all duration-300"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Manage Users
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all duration-300"
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                View Analytics
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Users</p>
+                <p className="text-2xl font-bold text-gray-900">2,345</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <p className="text-sm text-blue-600 mt-2">+15.3% from last month</p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Orders</p>
+                <p className="text-2xl font-bold text-gray-900">543</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <ShoppingCart className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <p className="text-sm text-purple-600 mt-2">+7.2% from last month</p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Conversion</p>
+                <p className="text-2xl font-bold text-gray-900">3.24%</p>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <BarChart className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+            <p className="text-sm text-orange-600 mt-2">+2.1% from last month</p>
+          </div>
         </div>
 
-        {/* Recent Activity */}
-        <Card className="mt-6 border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-slate-900">Recent Activity</CardTitle>
-            <CardDescription className="text-slate-600">Latest updates and notifications</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { action: "New user registration", time: "2 minutes ago", type: "success" },
-                { action: "Payment processed successfully", time: "15 minutes ago", type: "success" },
-                { action: "Campaign performance update", time: "1 hour ago", type: "info" },
-                { action: "System maintenance scheduled", time: "2 hours ago", type: "warning" },
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      activity.type === 'success' ? 'bg-emerald-400' :
-                      activity.type === 'warning' ? 'bg-amber-400' : 'bg-blue-400'
-                    }`}></div>
-                    <span className="text-slate-900 font-medium">{activity.action}</span>
-                  </div>
-                  <span className="text-slate-500 text-sm">{activity.time}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8 animate-fade-in">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button 
+              onClick={triggerConfetti}
+              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200"
+            >
+              <Plus className="w-6 h-6 text-indigo-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Add Product</span>
+            </button>
+            <button 
+              onClick={triggerConfetti}
+              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200"
+            >
+              <Mail className="w-6 h-6 text-green-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Send Campaign</span>
+            </button>
+            <button 
+              onClick={triggerConfetti}
+              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+            >
+              <FileText className="w-6 h-6 text-blue-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Generate Report</span>
+            </button>
+            <button 
+              onClick={triggerConfetti}
+              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200"
+            >
+              <Calendar className="w-6 h-6 text-purple-600 mb-2" />
+              <span className="text-sm font-medium text-gray-700">Schedule Meeting</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Action */}
+        <div className="text-center">
+          <button
+            onClick={triggerConfetti}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
+            🎉 Celebrate!
+          </button>
+        </div>
       </div>
     </div>
   );
