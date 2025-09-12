@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Particles from "react-tsparticles";
-import { loadConfettiPreset } from "tsparticles-preset-confetti";
+import Particles from "@tsparticles/react";
+import { loadConfettiPreset } from "@tsparticles/preset-confetti";
 import { initParticlesEngine } from "@/utils/particles";
-import type { Container, ISourceOptions } from "tsparticles-engine";
+import type { Container, ISourceOptions } from "@tsparticles/engine";
 import {
   Bell,
   Calendar,
@@ -15,7 +15,7 @@ import {
   ShoppingCart,
   BarChart,
 } from 'lucide-react';
-import { tsParticles } from "tsparticles-engine";
+import { tsParticles } from "@tsparticles/engine";
 
 const Dashboard = () => {
   const [init, setInit] = useState(false);
@@ -33,10 +33,16 @@ const Dashboard = () => {
   }, []);
 
   const triggerConfetti = useCallback(async () => {
-    const container = tsParticles.domItem(0);
-    if (container) {
-      await container.addPreset("confetti");
-    }
+    await tsParticles.load({
+      id: "confetti-burst", 
+      options: {
+        preset: "confetti",
+        particles: {
+          number: { value: 50 },
+          color: { value: ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7"] }
+        }
+      }
+    });
   }, []);
 
   const confettiOptions: ISourceOptions = {
