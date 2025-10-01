@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      dashboard_actions: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          icon: string
+          id?: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dashboard_settings: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          welcome_name: string
+          welcome_subtitle: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          welcome_name?: string
+          welcome_subtitle?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          welcome_name?: string
+          welcome_subtitle?: string
+        }
+        Relationships: []
+      }
+      dashboard_stats: {
+        Row: {
+          change: string
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          label: string
+          sort_order: number
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          change: string
+          color: string
+          created_at?: string
+          icon: string
+          id?: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          change?: string
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
