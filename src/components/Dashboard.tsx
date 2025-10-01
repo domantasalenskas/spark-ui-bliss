@@ -3,22 +3,16 @@ import Particles from "@tsparticles/react";
 import { loadConfettiPreset } from "@tsparticles/preset-confetti";
 import { initParticlesEngine } from "@/utils/particles";
 import type { Container, ISourceOptions } from "@tsparticles/engine";
-import {
-  Bell,
-  Calendar,
-  FileText,
-  Mail,
-  Plus,
-  Settings,
-  TrendingUp,
-  Users,
-  ShoppingCart,
-  BarChart,
-} from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { tsParticles } from "@tsparticles/engine";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { AdminPanel } from "@/components/AdminPanel";
+import { Toaster } from "@/components/ui/toaster";
 
 const Dashboard = () => {
   const [init, setInit] = useState(false);
+  const { settings, stats, actions, loading, refetch } = useDashboardData();
 
   useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -148,9 +142,25 @@ const Dashboard = () => {
     },
   };
 
-  if (!init) {
-    return <div>Loading...</div>;
+  if (!init || loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
+
+  const getIcon = (iconName: string) => {
+    const Icon = Icons[iconName as keyof typeof Icons] as any;
+    return Icon || Icons.Circle;
+  };
+
+  const getColorClasses = (color: string) => {
+    const colorMap: Record<string, { bg: string; text: string; hover: string }> = {
+      green: { bg: 'bg-green-100', text: 'text-green-600', hover: 'hover:bg-green-50' },
+      blue: { bg: 'bg-blue-100', text: 'text-blue-600', hover: 'hover:bg-blue-50' },
+      purple: { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'hover:bg-purple-50' },
+      orange: { bg: 'bg-orange-100', text: 'text-orange-600', hover: 'hover:bg-orange-50' },
+      indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'hover:bg-indigo-50 hover:border-indigo-300' },
+    };
+    return colorMap[color] || colorMap.blue;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 bg-grid-pattern">
@@ -173,10 +183,10 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                <Bell className="w-5 h-5" />
+                <Icons.Bell className="w-5 h-5" />
               </button>
               <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                <Settings className="w-5 h-5" />
+                <Icons.Settings className="w-5 h-5" />
               </button>
               <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
             </div>
@@ -186,112 +196,86 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8 animate-fade-in">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, Alex!</h2>
-          <p className="text-gray-600">Here's what's happening with your business today.</p>
-        </div>
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="mb-8">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="admin">Admin</TabsTrigger>
+          </TabsList>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">$45,231</p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+          <TabsContent value="dashboard">
+            {/* Welcome Section */}
+            <div className="mb-8 animate-fade-in">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {settings?.welcome_name}!
+              </h2>
+              <p className="text-gray-600">{settings?.welcome_subtitle}</p>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats.map((stat) => {
+                const Icon = getIcon(stat.icon);
+                const colors = getColorClasses(stat.color);
+                return (
+                  <div key={stat.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                      </div>
+                      <div className={`p-3 ${colors.bg} rounded-lg`}>
+                        <Icon className={`w-6 h-6 ${colors.text}`} />
+                      </div>
+                    </div>
+                    <p className={`text-sm ${colors.text} mt-2`}>{stat.change}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8 animate-fade-in">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {actions.map((action) => {
+                  const Icon = getIcon(action.icon);
+                  const colors = getColorClasses(action.color);
+                  return (
+                    <button 
+                      key={action.id}
+                      onClick={triggerConfetti}
+                      className={`flex flex-col items-center p-4 rounded-lg border border-gray-200 ${colors.hover} transition-all duration-200`}
+                    >
+                      <Icon className={`w-6 h-6 ${colors.text} mb-2`} />
+                      <span className="text-sm font-medium text-gray-700">{action.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <p className="text-sm text-green-600 mt-2">+20.1% from last month</p>
-          </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Users</p>
-                <p className="text-2xl font-bold text-gray-900">2,345</p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
+            {/* Main Action */}
+            <div className="text-center">
+              <button
+                onClick={triggerConfetti}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                🎉 Celebrate!
+              </button>
             </div>
-            <p className="text-sm text-blue-600 mt-2">+15.3% from last month</p>
-          </div>
+          </TabsContent>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Orders</p>
-                <p className="text-2xl font-bold text-gray-900">543</p>
-              </div>
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <ShoppingCart className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-            <p className="text-sm text-purple-600 mt-2">+7.2% from last month</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Conversion</p>
-                <p className="text-2xl font-bold text-gray-900">3.24%</p>
-              </div>
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <BarChart className="w-6 h-6 text-orange-600" />
-              </div>
-            </div>
-            <p className="text-sm text-orange-600 mt-2">+2.1% from last month</p>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8 animate-fade-in">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button 
-              onClick={triggerConfetti}
-              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200"
-            >
-              <Plus className="w-6 h-6 text-indigo-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">Add Product</span>
-            </button>
-            <button 
-              onClick={triggerConfetti}
-              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200"
-            >
-              <Mail className="w-6 h-6 text-green-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">Send Campaign</span>
-            </button>
-            <button 
-              onClick={triggerConfetti}
-              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
-            >
-              <FileText className="w-6 h-6 text-blue-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">Generate Report</span>
-            </button>
-            <button 
-              onClick={triggerConfetti}
-              className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200"
-            >
-              <Calendar className="w-6 h-6 text-purple-600 mb-2" />
-              <span className="text-sm font-medium text-gray-700">Schedule Meeting</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Main Action */}
-        <div className="text-center">
-          <button
-            onClick={triggerConfetti}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            🎉 Celebrate!
-          </button>
-        </div>
+          <TabsContent value="admin">
+            <AdminPanel 
+              settings={settings}
+              stats={stats}
+              actions={actions}
+              onUpdate={refetch}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
+      <Toaster />
     </div>
   );
 };
